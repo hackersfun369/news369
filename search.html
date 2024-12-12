@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css">
+    <title>News Search</title>
+</head>
+<body>
+    <nav>
+        <div class="logo">
+            <a href="index.html"><img src="./talk-show_17029388.png" alt=""></a>
+            <a href="index.html">News369</a>
+        </div>
+        <div class="sectionTypes">
+            <button class="sectionH4">Section</button>
+            <button class="typeH4">Type</button>
+        </div>
+    </nav>
+    <div class="sectionIds">
+        <a href="/section.html?sectionId=news">news</a>
+        <a href="/section.html?sectionId=world">world</a>
+        <a href="/section.html?sectionId=uk-news">uk news</a>
+        <a href="/section.html?sectionId=us-news">us news</a>
+        <a href="/section.html?sectionId=australia-news">australia news</a>
+        <a href="/section.html?sectionId=business">business</a>
+        <a href="/section.html?sectionId=technology">technology</a>
+        <a href="/section.html?sectionId=sport">sport</a>
+        <a href="/section.html?sectionId=culture">culture</a>
+        <a href="/section.html?sectionId=science">science</a>
+        <a href="/section.html?sectionId=environment">environment</a>
+        <a href="/section.html?sectionId=politics">politics</a>
+        <a href="/section.html?sectionId=education">education</a>
+        <a href="/section.html?sectionId=health">health</a>
+        <a href="/section.html?sectionId=opinion">opinion</a>
+        <a href="/section.html?sectionId=society">society</a>
+        <a href="/section.html?sectionId=fashion">fashion</a>
+        <a href="/section.html?sectionId=film">film</a>
+        <a href="/section.html?sectionId=books">books</a>
+        <a href="/section.html?sectionId=music">music</a>
+        <a href="/section.html?sectionId=travel">travel</a>
+        <a href="/section.html?sectionId=money">money</a>
+        <a href="/section.html?sectionId=media">media</a>   
+       </div>
+       <div class="typeIds">
+        <a href="/type.html?typeId=article">article</a>
+        <a href="/type.html?typeId=audio">audio</a>
+        <a href="/type.html?typeId=gallery">gallery</a>
+        <a href="/type.html?typeId=interactive">interactive</a>
+        <a href="/type.html?typeId=liveblog">liveblog</a>
+        <a href="/type.html?typeId=picture">picture</a>
+        <a href="/type.html?typeId=video">video</a>
+       </div>
+    <div class="search">
+        <input class="searchTerm" id="searchTerm" type="text" placeholder="Enter search term" required>
+        <input class="date" id="date" type="date" required>
+        <button onclick="fetchSearch()" class="searchBtn">Search</button>
+    </div>
+    <div class="searchContainer" id="resultsContainer"></div>
+
+    <script>
+     async function fetchSearch() { 
+    const searchTerm = document.querySelector(".searchTerm").value;
+    const date = document.querySelector(".date").value;
+    if (!date) {
+        alert("Please enter date.");
+        return;
+    }
+ 
+    console.log(searchTerm, date);
+    const baseUrl = `https://content.guardianapis.com/search?api-key=a5e1286e-ae77-4baf-bef9-2acb5ef6c4ab&order-by=newest&q=${searchTerm}` + 
+                    `&from-date=${date}&show-fields=thumbnail,trailText&page=`;
+
+    const data = [];
+
+    try {
+        for (let page = 1; page <= 3; page++) {
+            const response = await fetch(baseUrl + page);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const result = await response.json();
+            data.push(...result.response.results);
+        }
+        console.log(data);
+        displayHome(data);
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+}
+
+        function displayHome(data) {
+            const resultsContainer = document.querySelector("#resultsContainer");
+            resultsContainer.innerHTML = '';
+            if(data.length == 0){
+                const resultsContainer = document.querySelector("#resultsContainer");
+                resultsContainer.innerHTML = '';
+                resultsContainer.innerHTML = `
+                <h3>No Results Found On This Date</h3>
+                <p>Try searching for a different date or term.</p>
+                `
+            }
+            data.forEach((item) => {
+                const resultDiv = document.createElement("div");
+                resultDiv.classList.add("result");
+                const localPublicationDate = new Date(item.webPublicationDate).toLocaleString();
+
+                resultDiv.innerHTML = `
+                    <h1><a href="/item.html?id=${item.id}">${item.webTitle}</a></h1>
+                    ${item.fields.thumbnail ? `<img src="${item.fields.thumbnail}" alt="${item.webTitle} thumbnail">` : ''}
+                    <p>${item.fields.trailText}</p>
+                    <p>Published At: ${localPublicationDate}</p> <!-- Display local time -->
+                    <div class="sectionType">
+                        <a href="/section.html?sectionId=${item.sectionId}">${item.sectionId}</a>
+                        <a href="/type.html?typeId=${item.type}">${item.type}</a>
+                    </div>
+                `;
+                resultsContainer.appendChild(resultDiv);
+            });
+        }
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>
